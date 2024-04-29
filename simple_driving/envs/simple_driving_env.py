@@ -70,18 +70,19 @@ class SimpleDrivingEnv(gym.Env):
             break
           self._envStepCounter += 1
 
-        # Compute reward as L2 change in distance to goal
-        # dist_to_goal = math.sqrt(((car_ob[0] - self.goal[0]) ** 2 +
-                                  # (car_ob[1] - self.goal[1]) ** 2))
-        dist_to_goal = math.sqrt(((carpos[0] - goalpos[0]) ** 2 +
-                                  (carpos[1] - goalpos[1]) ** 2))
-        # reward = max(self.prev_dist_to_goal - dist_to_goal, 0)
-        reward = -dist_to_goal
+        # Compute current distance to the goal
+        dist_to_goal = math.sqrt(((carpos[0] - goalpos[0]) ** 2 + (carpos[1] - goalpos[1]) ** 2))
+
+        # Calculate the reward based on improvement towards the goal
+        improvement = self.prev_dist_to_goal - dist_to_goal
+        reward = max(improvement, 0)  # Only reward improvement, negative improvements yield zero reward
+
+        # Update previous distance to the goal for next step comparison
         self.prev_dist_to_goal = dist_to_goal
 
-        # Done by reaching goal
-        if dist_to_goal < 1.5 and not self.reached_goal:
-            #print("reached goal")
+        # Large positive reward for reaching the goal
+        if dist_to_goal < 1.5:  # Threshold distance to consider the goal reached
+            reward = 100  # Assign a large positive reward
             self.done = True
             self.reached_goal = True
 
