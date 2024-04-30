@@ -75,8 +75,11 @@ class SimpleDrivingEnv(gym.Env):
 
         # Calculate the reward based on improvement towards the goal
         improvement = self.prev_dist_to_goal - dist_to_goal
-        reward = max(improvement, 0)  # Only reward improvement, negative improvements yield zero reward
+        reward = improvement if improvement > 0 else improvement * 0.5  # Only reward improvement, penalize negative improvement
 
+        # Deduct a small living reward to encourage efficiency
+        reward -= 0.1
+        
         # Update previous distance to the goal for next step comparison
         self.prev_dist_to_goal = dist_to_goal
 
