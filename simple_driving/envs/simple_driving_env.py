@@ -57,38 +57,35 @@ class SimpleDrivingEnv(gym.Env):
             action = [throttle, steering_angle]
         self.car.apply_action(action)
         for i in range(self._actionRepeat):
-          self._p.stepSimulation()
-          if self._renders:
-            time.sleep(self._timeStep)
-
-          carpos, carorn = self._p.getBasePositionAndOrientation(self.car.car)
-          goalpos, goalorn = self._p.getBasePositionAndOrientation(self.goal_object.goal)
-          car_ob = self.getExtendedObservation()
-
-          if self._termination():
-            self.done = True
-            break
-          self._envStepCounter += 1
-
+            self._p.stepSimulation()
+            if self._renders:
+                time.sleep(self._timeStep)
+    
+            carpos, carorn = self._p.getBasePositionAndOrientation(self.car.car)
+            goalpos, goalorn = self._p.getBasePositionAndOrientation(self.goal_object.goal)
+            car_ob = self.getExtendedObservation()
+    
+            if self._termination():
+                self.done = True
+                break
+            self._envStepCounter += 1
+    
         # Compute current distance to the goal
         dist_to_goal = math.sqrt(((carpos[0] - goalpos[0]) ** 2 + (carpos[1] - goalpos[1]) ** 2))
-
+    
         # Calculate the reward based on improvement towards the goal
         improvement = self.prev_dist_to_goal - dist_to_goal
         reward = improvement if improvement > 0 else improvement * 0.5  # Only reward improvement, penalize negative improvement
-
+    
         # Deduct a small living reward to encourage efficiency
         reward -= 0.1
         
-        # Update previous distance to the goal for next step comparison
-        self.prev_dist_to_goal = dist_to_goal
-
         # Large positive reward for reaching the goal
         if dist_to_goal < 1.5:  # Threshold distance to consider the goal reached
-            reward = 100  # Assign a large positive reward
+            reward += 50  # Bonus reward for reaching the goal
             self.done = True
             self.reached_goal = True
-
+    
         ob = car_ob
         return ob, reward, self.done, dict()
 
